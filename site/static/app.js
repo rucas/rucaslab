@@ -93,13 +93,14 @@
   }
 
   function fetchCached(key, url) {
-    return fetch(url)
+    var cached = cacheGet(key);
+    var fresh = fetch(url)
       .then(function(r) { return r.json(); })
       .then(function(data) { cacheSet(key, data); return { data: data, stale: false }; })
       .catch(function() {
-        var v = cacheGet(key);
-        return v ? { data: v, stale: true } : null;
+        return cached ? { data: cached, stale: true } : null;
       });
+    return { cached: cached ? { data: cached, stale: true } : null, fresh: fresh };
   }
 
   function patchCard(card, rangeRes, statusRes, hitsRes) {
@@ -140,24 +141,25 @@
     var url  = card.dataset.url;
     var name = card.dataset.name;
     var now  = Math.floor(Date.now() / 1000);
-    return Promise.all([
-      fetchCached(
-        "range:" + url,
-        "/prometheus/api/v1/query_range?query=" +
-          encodeURIComponent('probe_duration_seconds{job="blackbox-golinks",instance="' + url + '"}') +
-          "&start=" + (now - 86400) + "&end=" + now + "&step=3600"
-      ),
-      fetchCached(
-        "status:" + url,
-        "/prometheus/api/v1/query?query=" +
-          encodeURIComponent('probe_success{job="blackbox-golinks",instance="' + url + '"}')
-      ),
-      fetchCached(
-        "hits:" + name,
-        "/loki/loki/api/v1/query?query=" +
-          encodeURIComponent('sum(count_over_time({unit="caddy.service"} |= "/' + name + '" [168h]))')
-      )
-    ]).then(function(res) { patchCard(card, res[0], res[1], res[2]); });
+    var rangeReq = fetchCached(
+      "range:" + url,
+      "/prometheus/api/v1/query_range?query=" +
+        encodeURIComponent('probe_duration_seconds{job="blackbox-golinks",instance="' + url + '"}') +
+        "&start=" + (now - 86400) + "&end=" + now + "&step=3600"
+    );
+    var statusReq = fetchCached(
+      "status:" + url,
+      "/prometheus/api/v1/query?query=" +
+        encodeURIComponent('probe_success{job="blackbox-golinks",instance="' + url + '"}')
+    );
+    var hitsReq = fetchCached(
+      "hits:" + name,
+      "/loki/loki/api/v1/query?query=" +
+        encodeURIComponent('sum(count_over_time({unit="caddy.service"} |= "/' + name + '" [168h]))')
+    );
+    patchCard(card, rangeReq.cached, statusReq.cached, hitsReq.cached);
+    return Promise.all([rangeReq.fresh, statusReq.fresh, hitsReq.fresh])
+      .then(function(res) { patchCard(card, res[0], res[1], res[2]); });
   }
 
   var cards = Array.from(document.querySelectorAll(".card[data-url]"));
