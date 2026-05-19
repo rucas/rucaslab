@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rucaslab</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>rucaslab</h1>
+      <button id="theme-toggle" aria-label="toggle theme"></button>
+    </header>
+    <div class="search-wrap">
+      <input id="search" type="search" placeholder="search..." autocomplete="off" spellcheck="false">
+    </div>
+    <div class="list">
+      {% for link in config.extra.golinks %}
+      <a class="card" href="{{ link.url | safe }}" data-name="{{ link.name }}" data-url="{{ link.url | safe }}">
+        <div class="card-top">
+          <span class="status-dot"></span>
+          <span class="name"><span class="go-prefix">go/</span>{{ link.name }}</span>
+          <span class="latency"></span>
+          <span class="hits"></span>
+        </div>
+        <div class="description">{{ link.description | default(value='') }}</div>
+        <div class="sparkline-row">
+          <svg class="sparkline"></svg>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    <footer>
+      <span id="last-updated"></span>
+    </footer>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>

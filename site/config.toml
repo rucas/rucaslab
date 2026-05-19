@@ -1,0 +1,33 @@
+base_url = "/"
+compile_sass = false
+generate_feeds = false
+
+[[extra.golinks]]
+name        = "docs"
+url         = "https://docs.rucaslab.com"
+description = "Project documentation"
+
+[[extra.golinks]]
+name        = "home"
+url         = "https://home.rucaslab.com"
+description = "Home dashboard"
+
+[[extra.golinks]]
+name        = "grafana"
+url         = "https://grafana.rucaslab.com"
+description = "Metrics and dashboards"
+
+[[extra.golinks]]
+name        = "budget"
+url         = "https://budget.rucaslab.com"
+description = "Budget tracker"
+
+[[extra.golinks]]
+name        = "wiki"
+url         = "https://wiki.rucaslab.com"
+description = "Internal wiki"
+
+[[extra.golinks]]
+name        = "status"
+url         = "https://status.rucaslab.com"
+description = "Uptime Kuma status page"

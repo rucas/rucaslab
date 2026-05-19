@@ -1,0 +1,57 @@
+{
+  description = "rucaslab homelab NixOS module — golinks + service index";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    pre-commit-hooks = {
+      url = "github:cachix/pre-commit-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = inputs @ { flake-parts, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [ inputs.pre-commit-hooks.flakeModule ];
+
+      systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
+
+      perSystem = { config, pkgs, lib, ... }: {
+        devShells.default = pkgs.mkShell {
+          packages = with pkgs; [ git nixpkgs-fmt zola ];
+          shellHook = ''
+            ${config.pre-commit.installationScript}
+          '';
+        };
+
+        pre-commit.settings = {
+          src = ./.;
+          hooks.nixpkgs-fmt.enable = true;
+        };
+
+        packages.preview =
+          let buildSite = import ./nixos/site.nix { inherit pkgs lib; };
+          in buildSite {
+            docs = "https://docs.rucaslab.com";
+            home = "https://home.rucaslab.com";
+            grafana = "https://grafana.rucaslab.com";
+            budget = "https://budget.rucaslab.com";
+            wiki = "https://wiki.rucaslab.com";
+            status = "https://status.rucaslab.com";
+          };
+
+        apps.serve = {
+          type = "app";
+          program = lib.getExe (pkgs.writeShellScriptBin "serve" ''
+            echo "Serving at http://localhost:8080"
+            ${pkgs.python3}/bin/python3 -m http.server 8080 \
+              --directory ${config.packages.preview}
+          '');
+        };
+      };
+
+      flake = {
+        nixosModules.default = import ./nixos/default.nix;
+      };
+    };
+}
