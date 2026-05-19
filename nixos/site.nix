@@ -1,13 +1,14 @@
 { pkgs, lib }:
 golinks:
 let
-  golinksToml = lib.concatStringsSep "" (lib.mapAttrsToList
-    (name: url:
+  golinksToml = lib.concatMapStrings
+    (link:
       "\n[[extra.golinks]]\n" +
-      "name        = \"${name}\"\n" +
-      "url         = \"${url}\"\n"
+      "name        = \"${link.name}\"\n" +
+      "url         = \"${link.url}\"\n" +
+      "description = \"${link.description}\"\n"
     )
-    golinks);
+    golinks;
 
   configToml = pkgs.writeText "config.toml" ''
     base_url = "/"

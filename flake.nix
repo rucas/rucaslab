@@ -31,14 +31,14 @@
 
         packages.preview =
           let buildSite = import ./nixos/site.nix { inherit pkgs lib; };
-          in buildSite {
-            docs = "https://docs.rucaslab.com";
-            home = "https://home.rucaslab.com";
-            grafana = "https://grafana.rucaslab.com";
-            budget = "https://budget.rucaslab.com";
-            wiki = "https://wiki.rucaslab.com";
-            status = "https://status.rucaslab.com";
-          };
+          in buildSite [
+            { name = "docs"; url = "https://docs.rucaslab.com"; description = "Project documentation"; }
+            { name = "home"; url = "https://home.rucaslab.com"; description = "Home dashboard"; }
+            { name = "grafana"; url = "https://grafana.rucaslab.com"; description = "Metrics and dashboards"; }
+            { name = "budget"; url = "https://budget.rucaslab.com"; description = "Budget tracker"; }
+            { name = "wiki"; url = "https://wiki.rucaslab.com"; description = "Internal wiki"; }
+            { name = "status"; url = "https://status.rucaslab.com"; description = "Uptime Kuma status page"; }
+          ];
 
         apps.serve = {
           type = "app";
