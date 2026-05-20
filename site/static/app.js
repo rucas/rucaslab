@@ -263,13 +263,14 @@
         'probe_success{job="blackbox-golinks",instance="' + url + '"}',
       ),
     );
+    var hostname = new URL(url).hostname;
     var hitsReq = fetchCached(
       "hits:" + name,
       "/loki/loki/api/v1/query?query=" +
       encodeURIComponent(
-        'sum(count_over_time({unit="caddy.service"} |= "/' +
-        name +
-        '" [168h]))',
+        'sum(count_over_time({unit="caddy.service"} |= "' +
+        hostname +
+        '" != "Go-http-client" [168h]))',
       ),
     );
     patchCard(card, rangeReq.cached, statusReq.cached, hitsReq.cached);
